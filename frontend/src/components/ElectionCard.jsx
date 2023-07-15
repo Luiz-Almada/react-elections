@@ -1,17 +1,17 @@
-export default function FlashCard({
+export default function ElectionCard({
   id,
   title = 'Título do card',
   description = 'Descrição do card, que pode conter mais palavras que o título',
-  showFlashCardTitle = true,
-  onToggleFlashCard = null,
+  showElectionCardTitle = true,
+  onToggleElectionCard = null,
 }) {
   function handleCardClick() {
-    if (onToggleFlashCard) {
-      onToggleFlashCard(id);
+    if (onToggleElectionCard) {
+      onToggleElectionCard(id);
     }
   }
 
-  const fontSizeClassName = showFlashCardTitle ? 'text-xl' : 'text-sm';
+  const fontSizeClassName = showElectionCardTitle ? 'text-xl' : 'text-sm';
 
   return (
     <div
@@ -21,7 +21,7 @@ export default function FlashCard({
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
       onClick={handleCardClick}
     >
-      {showFlashCardTitle ? title : description}
+      {showElectionCardTitle ? title : description}
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import FlashCardsPage from './pages/FlashCardsPage';
+import ElectionCardsPage from './pages/ElectionCardsPage';
 
 export default function App() {
-  return <FlashCardsPage />;
+  return <ElectionCardsPage />;
 }

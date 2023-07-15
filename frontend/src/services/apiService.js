@@ -1,30 +1,16 @@
-import { read, exclude, create, edit } from './httpService';
-import { getNewId } from './idService';
+import { read } from './httpService';
 
-export async function apiGetAllFlashCards() {
-  const allFlashCards = await read('/flashcards');
+export async function apiGetElectionsByCityId() {
+  const allFlashCards = await read('/candidates');
   return allFlashCards;
 }
 
-export async function apiDeleteFlashCard(cardId) {
-  await exclude(`/flashcards/${cardId}`);
+export async function apiGetAllCities() {
+  const allCities = await read('/cities');
+  return allCities;
 }
 
-export async function apiCreateFlashCard(title, description) {
-  const newFlashCard = create('/flashcards', {
-    id: getNewId(),
-    title,
-    description,
-  });
-
-  return newFlashCard;
-}
-
-export async function apiUpdateFlashCard(cardId, title, description) {
-  const updatedFlashCard = edit(`/flashcards/${cardId}`, {
-    title,
-    description,
-  });
-
-  return updatedFlashCard;
+export async function apiGetAllElection() {
+  const allElection = await read('/election');
+  return allElection;
 }
