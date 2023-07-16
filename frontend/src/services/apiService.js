@@ -1,6 +1,6 @@
 import { read } from './httpService';
-
-export async function apiGetElectionsByCityId() {
+//apiGetElectionsByCityId
+export async function apiGetAllCandidates() {
   const allFlashCards = await read('/candidates');
   return allFlashCards;
 }

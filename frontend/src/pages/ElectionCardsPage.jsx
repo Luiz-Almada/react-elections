@@ -1,5 +1,5 @@
 //import { getNewId } from '../services/idService';
-import { useEffect, useState } from 'react';
+import { useEffect, useState} from 'react';
 
 import Error from '../components/Error';
 import ElectionCard from '../components/ElectionCard';
@@ -10,7 +10,7 @@ import Main from '../components/Main';
 import Item from '../components/Item';
 
 import {
-//  apiGetElectionsByCityId,
+  apiGetAllCandidates,
   apiGetAllCities,
   apiGetAllElection,
 } from '../services/apiService';
@@ -19,16 +19,33 @@ export default function FlashCardsPage() {
   // Back End
   const [allCities, setAllCities] = useState([]);
   const [allElection, setAllElection] = useState([]);
+  const [allCandidates, setAllCandidates] = useState([]);
+
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Front End
   const [filterCity, setFilterCity] = useState([]);
-  const [selectedCity, setSelectedCity] = useState([]);
+  const [selectedCity, setSelectedCity] = useState('');
+  //const [opcaoSelecionada, setOpcaoSelecionada] = useState([]);
   const [filterCandidatesCity, setFilterCandidatesCity] = useState([]);
 
+
+
   useEffect(() => {
+    async function getAllCandidates() {
+      try {
+        const backEndAllCandidates = await apiGetAllCandidates();
+        setAllCandidates(backEndAllCandidates);
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
+      } catch (error) {
+        setError(error.message);
+      }
+    }
+
     async function getAllCities() {
       try {
         const backEndAllCities = await apiGetAllCities();
@@ -53,29 +70,64 @@ export default function FlashCardsPage() {
       }
     }
 
+    getAllCandidates();
     getAllCities();
     getAllElection();
   }, []);
 
   useEffect(() => {
     function handleFilterCity(){
-       const result = allCities.filter(item => item.id === selectedCity);
-       setFilterCity(result[0]);
-       console.log(result[0]);
+      let result;
+        
+      if (selectedCity && selectedCity.length > 0){
+        result = allCities.filter(item => item.id === selectedCity);
+      } else {
+        result = allCities
       }
-      handleFilterCity();
+      setFilterCity(result[0]);
+      // console.log(result[0])
+      //console.log(filterCity)
+      
+      }
+    
+      handleFilterCity()
+
   }, [allCities, selectedCity]);
 
   useEffect(() => {
-    function handleFilterCity(){
-       const result = allCities.filter(item => item.id === selectedCity);
-       setFilterCity(result[0]);
-       console.log(result[0]);
+    function handleFilterElectionCandidateByCityId(){
+      let result1;
+      
+      if (selectedCity && selectedCity.length > 0){
+        //result1 = allElection.filter(item => item.cityId === selectedCity).sort((a, b) => b.votes - a.votes).map((item, index) => { return {...item, statusItem: (index === 0 ? 'Eleito' : 'Não leito') } });
+
+        result1 = allElection.filter(item => item.cityId === selectedCity).sort((a, b) => b.votes - a.votes).map((item, index) => { return {...item, statusItem: (index === 0 ? 'Eleito' : 'Não leito') } }).map(election => {
+          const candidate = allCandidates.find(candidate => candidate.id === election.candidateId);
+          const name = candidate ? candidate.name : '';
+          return {
+            ...election,
+            candidateName: name
+          };
+        });
+
+      } else {
+        result1 = allElection.filter(item => item.cityId === allCities[0].id).sort((a, b) => b.votes - a.votes).map((item, index) => { return {...item, statusItem: (index === 0 ? 'Eleito' : 'Não leito') } }).map(election => {
+          const candidate = allCandidates.find(candidate => candidate.id === election.candidateId);
+          const name = candidate ? candidate.name : '';
+          return {
+            ...election,
+            candidateName: name
+          };
+        });
       }
-      handleFilterCity();
-  }, [allCities, selectedCity]);
+      setFilterCandidatesCity(result1);
+    }
+    
 
 
+      handleFilterElectionCandidateByCityId()
+
+  }, [allCandidates, allElection, selectedCity, allCities]);
 
 
   let mainJsx = (
@@ -93,19 +145,25 @@ export default function FlashCardsPage() {
       <>
         <div className='text-center text-lg m-2 font-bold'>Eleição em {filterCity.name}</div>
         <div className='text-center space-x-4 m-2'>
-          <Item label='Total de eleitores: '>{filterCity.value}</Item> 
-          <Item label='Abstenção: '>{filterCity.presence}</Item> 
-          <Item label='Comparecimento: '>{filterCity.votingPopulation}</Item> 
-        </div>
-        <ElectionCards allCities={allCities} cityId={allElection.cityId}>
+          <Item label='Total de eleitores: '>{filterCity? filterCity.votingPopulation: ''}</Item> 
+          <Item label='Abstenção: '>{filterCity? filterCity.absence: ''}</Item> 
+          <Item label='Comparecimento: '>{filterCity? filterCity.presence: ''}</Item> 
 
-          {allElection.map(({ id, cityId, candidateId, votes }) => {
+        </div>
+        <ElectionCards allCities={filterCity} cityId={allElection.cityId}>
+
+          {filterCandidatesCity.map(({ id, cityId, candidateId, votes, statusItem, candidateName }) => {
             return (
               <ElectionCard
                 key={id}
                 id={id}
-                title={candidateId}
-                description={votes}
+                cityId={cityId}
+                candidateId={candidateId}
+                votes={votes}
+                name={"name do cara"}
+                totalVotes={filterCity.presence}
+                statusItem={statusItem}
+                candidateName={candidateName}
               />
             );
           })}
@@ -123,9 +181,10 @@ export default function FlashCardsPage() {
         <p>Escolha o município</p>
         <select
           id={'selectCity'}
-          // onChange={e => setSelectedCity(e.target.options[e.target.selectedIndex].textContent)} 
-          onChange={e => setSelectedCity(e.target.value)} 
+          onChange={e => setSelectedCity(e.target.value)}
+          className='shadow-lg'
         >
+         
           {allCities.map(({ id, name }) => {
             return (
               <option key={id} value={id}>
